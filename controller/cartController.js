@@ -52,20 +52,25 @@ const upadateCart = async (req,res) =>{
 }
 
 // add product to cart
-const getUserCart = async (req,res) =>{
+const getUserCart = async (req, res) => {
     try {
-        const {userId} =req.body
+        const { userId } = req.body;
 
-        const userData = await userModel.findById(userId)
-        let cartData = await userData.cartData;
+        // Fetch user data
+        const userData = await userModel.findById(userId);
+        if (!userData) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
 
-        res.json({seccess:true,cartData})
+        // Get cart data
+        const cartData = userData.cartData; // No need for await
 
+        res.json({ success: true, cartData });
     } catch (error) {
-        console.log(error);
-        res.json({seccess:false,message:error.message})
+        console.error(error);
+        res.status(500).json({ success: false, message: error.message });
     }
-}
+};
 
 export {addToCarrt, upadateCart, getUserCart}
 
