@@ -1,16 +1,13 @@
-
 import userModel from "../model/userModel.js";
-import orderModel from "../model/orderModel.js"
+import orderModel from "../model/orderModel.js";
 
 const placeOrder = async (req, res) => {
   try {
-    // Destructure values from req.body
     const { userId, items, amount, address } = req.body;
 
-    // Prepare the order data
     const orderData = {
       userId,
-      items,
+      items,  // Corrected to 'items' (matches frontend)
       amount,
       address,
       paymentMethod: "COD",
@@ -18,41 +15,66 @@ const placeOrder = async (req, res) => {
       date: Date.now(),
     };
 
-    // Create a new order
     const newOrder = new orderModel(orderData);
-
-    // Save the order to the database
     await newOrder.save();
 
-    // Optionally, update user data (e.g., clearing the cart after placing the order)
-    await userModel.findByIdAndUpdate(userId, { cartData:{} } );
+    await userModel.findByIdAndUpdate(userId, { cartData: {} });
 
-    // Send a success response
-    res.status(200).json({success:true, message: "Order placed successfully!", order: newOrder });
+    res.json({ success: true, data: newOrder });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({success:false, message: "Error placing the order.", error: error.message });
+    console.log(error);
+    res.json({ success: false, message: error.message });
   }
 };
 
-const placeOrderStripe = async (req,res) => {
+const placeOrderStripe = async (req, res) => {
+  try {
+    res.json({ success: true, message: "Stripe payment logic here" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
 
-}
+const placeOrderRazorpay = async (req, res) => {
+  try {
+    res.json({ success: true, message: "Razorpay payment logic here" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
 
-const placeOrderRazorpay = async (req,res) => {
-    
-}
+const allOrders = async (req, res) => {
+  try {
+    const orders = await orderModel.find();
+    res.json({ success: true, data: orders });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
 
-const allOrders = async (req,res) => {
-    
-}
+const userOrders = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const orders = await orderModel.find({ userId });
+    res.json({ success: true, data: orders });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
 
-const userOrders = async (req,res) => {
-    
-}
+const updateStatus = async (req, res) => {
+  try {
+    const { orderId, status } = req.body;
+    const updatedOrder = await orderModel.findByIdAndUpdate(orderId, { status }, { new: true });
+    res.json({ success: true, data: updatedOrder });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
 
-const updateStatus = async (req,res) => {
-    
-}
-
-export {placeOrder,placeOrderStripe,placeOrderRazorpay,allOrders,userOrders, updateStatus}
+export { placeOrder, placeOrderStripe, placeOrderRazorpay, allOrders, userOrders, updateStatus };
